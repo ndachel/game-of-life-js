@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+
+body {
+    background-color: #424242;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+}
+
+h1 {
+    letter-spacing: 1px;
+    margin: 50px;
+}
+
+canvas {
+    background: #343434;
+    padding: 0;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .startButton {
+    background-color: #424242; 
+    color: #FFFFFF; 
+    border: 3px solid #a060b9;
+    margin: 5px;
+  }
+  
+  .startButton:hover {
+    background-color: #a060b9;
+    color: #424242;
+  }
+
+  .stopButton {
+    background-color: #424242; 
+    color: #FFFFFF; 
+    border: 3px solid #c86060;
+    margin: 5px;
+  }
+  
+  .stopButton:hover {
+    background-color: #c86060;
+    color: #424242;
+  }
