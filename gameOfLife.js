@@ -1,44 +1,102 @@
 //Conway's Gameof Life implementation using html5 canvas element and JS
 //github @hjdachel
 //Jan 2021
-const cWidth = 1000;
-const cHeight = 1000;
+const canvasWidth = 1000;
+const canvasHeight = 1000;
 const p = .5;
 let startButton;
 let stopButton;
 let canvas;
 let ctx;
 
+const gameBoardSize = 25;
+let stop = false;
+
 
 /** BEGIN CLASS DEFS (ES6 classes can't be hoisted) */
 
-//Status = live or dead (true or false)
-class Cell {
-    constructor(x, y, status) {
-        this.x = x;
-        this.y = y;
-        this.status = status;
+
+class Game {
+    constructor(gameBoard, rule) {
+        this.gameBoard = gameBoard;
+        this.rule = rule;
+    }
+
+    nextIter() {
+        //console.log(this.gameBoard);
+        let nextGen = this.gameBoard.map(row => row.slice());
+        for (let h = 0; h < this.gameBoard.length; h++) {
+            for (let w = 0; w < this.gameBoard[h].length; w++) {
+                if (this.alive(h, w)) {
+                    nextGen[h][w] = 1;
+                } else {
+                    nextGen[h][w] = 0;
+                }
+            }
+        }
+        this.gameBoard = nextGen.map(row => row.slice());
+    }
+
+    alive(h, w) {
+            let liveNeighbours = 0;
+            const currCell = this.gameBoard[h][w];
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (this.gameBoard[(i+h + gameBoardSize) % gameBoardSize][(j+w + gameBoardSize) % gameBoardSize]) {
+                        liveNeighbours++;
+                    }
+                }
+            }
+
+            
+            if (this.gameBoard[h][w]) {
+                liveNeighbours--;
+                if (liveNeighbours == 2 || liveNeighbours == 3) {
+                    return true; 
+                }else {
+                    return false;
+                }
+            }else if (liveNeighbours == 3) {
+                return true;
+            }else return false;
+
     }
 
 }
 
-class Game {
-    constructor(gameBoard) {
-        this.gameBoard = gameBoard;
+class Rule {
+    constructor(liveRule, deadRule) {
+        this.liveRule = liveRule;
+        this.deadRule = deadRule;
     }
 
-    nextIter() {
-        let nextGen = [...gameBoard];
-        for (let h = 0; h < this.gameBoard.length; h++) {
-            for (let w = 0; w < gameBoard[h].length; w++) {
-                if (alive(h, w)) {
-                    nextGen[h][w].status = true;
-                } else {
-                    nextGen[h][w].status = false;
-                }
+    eval(currCell, liveNeighbours) {
+        if (currCell) {
+            if ((liveNeighbours === 2) || (liveNeighbours === 3)) {
+                return true;
+            }
+        } else if (!currCell) {
+            if (liveNeighbours === 3) {
+                return true;
             }
         }
+        return false
     }
+
+
+    // eval(nw, n, ne, w, me, e, sw, s, se) {
+    //     let liveNeighbours = nw + n + ne + w + e + sw + s + se;
+    //     if (me) {
+    //         if ((liveNeighbours === 2) || (liveNeighbours === 3)) {
+    //             return true;
+    //         }
+    //     } else if (!me) {
+    //         if (liveNeighbours === 3) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
 }
 
@@ -51,15 +109,27 @@ window.onload = () => {
     startButton = $("#startButton");
     stopButton = $("#stopButton");
 
+    const board = init(gameBoardSize);
+    const rule = new Rule([2, 3], 3);
+    const game = new Game(board, rule);
+
+    game.gameBoard[12][12] = 1;
+    game.gameBoard[13][12] = 1;
+    game.gameBoard[14][12] = 1;
+
+    console.log(...(game.gameBoard));
+    
     //start button is pressed
-    startButton.click( () => {
-        // for (let i = 0; i < 25; i++) {
-        //     drawLiveRect((40 * i), 0);
-        // }
-        init();
+    startButton.click(() => {
+
+        
+        clearCanvas();
+        drawBoard(game.gameBoard);
+        game.nextIter();
     });
 
-    stopButton.click( () => {
+    stopButton.click(() => {
+        stop = !stop;
         clearCanvas();
     });
 
@@ -68,32 +138,19 @@ window.onload = () => {
 
 /** draws a 40x40 rectangle at the specified x and y */
 const drawLiveRect = (x, y) => {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "#9cd9c1";
     ctx.fillRect(x + 0.5, y + 0.5, 40, 40);
 };
 
 
-/** generates a row of initial Cell objects with the correct x, going from 0-960. takes current Y value as arg  */
-const generatePlaceholder = (y) => {
-    let placeholder = []
-    let currX = 0;
-    let currBool = false;
-
-    for (let i = 0; i < 25; i++) {
-        placeholder.push(new Cell(currX, y, currBool));
-        currX += 40;
-    }
-    return placeholder;
-}
 
 /** generates an initial game board of cells with the correct x and y values. Calls generatePlaceholder for each row */
-const init = () => {
+const init = (numberOfCells) => {
+    let filler = Array(numberOfCells).fill(0);
     let board = [];
-    let currY = 0;
 
-    for (let i = 0; i < 25; i++) {
-        board.push(generatePlaceholder(currY));
-        currY += 40;
+    for (let i = 0; i < numberOfCells; i++) {
+        board.push(filler.slice());
     }
 
     return board;
@@ -101,26 +158,17 @@ const init = () => {
 
 /** Draws the game board given as the arg on the canvas. Calls drawLiveRect */
 const drawBoard = (board) => {
-    let alive = filterAlive(board);
-
-    alive.forEach( (element) => {
-        drawLiveRect(element.x, element.y);
-    });
-};
-
-/** filters a game board by living cells */
-filterAlive = (arr) => {
-    let newArr = [];
-    for (let i = 0; i < arr.length; i++) {
-        let curr = arr[i].filter((obj) => {
-            return obj.status === true;
-        });
-
-        curr.forEach(element => newArr.push(element));
-
+    const cellOffset = canvasWidth / gameBoardSize;
+    for (let y = 0; y < board.length; y++) {
+        for (let x = 0; x < board[y].length; x++) {
+            if (board[y][x] == 1) {
+                // console.log(`x: ${x}, y: ${y}`);
+                drawLiveRect(x * cellOffset, y * cellOffset);
+            }
+        }
     }
-    return newArr;
 };
+
 
 /** clears the entire canvas */
 const clearCanvas = () => {
@@ -128,7 +176,8 @@ const clearCanvas = () => {
 }
 
 
-/** constructs a Game object and runs the game. */
-const run = () => {
-    const game = new Game(init());
-}
+const gameLoop = (timeStamp) => {
+    let progress = timeStamp - lastRender;
+
+
+};
