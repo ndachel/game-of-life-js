@@ -10,8 +10,6 @@ let canvas;
 let ctx;
 
 const gameBoardSize = 25;
-let stop = false;
-
 
 /** BEGIN CLASS DEFS (ES6 classes can't be hoisted) */
 
@@ -51,12 +49,12 @@ class Game {
             
             if (this.gameBoard[h][w]) {
                 liveNeighbours--;
-                if (liveNeighbours == 2 || liveNeighbours == 3) {
+                if (liveNeighbours == this.rule[0] || liveNeighbours == this.rule[1]) {
                     return true; 
                 }else {
                     return false;
                 }
-            }else if (liveNeighbours == 3) {
+            }else if (liveNeighbours == this.rule[2]) {
                 return true;
             }else return false;
 
@@ -64,41 +62,6 @@ class Game {
 
 }
 
-class Rule {
-    constructor(liveRule, deadRule) {
-        this.liveRule = liveRule;
-        this.deadRule = deadRule;
-    }
-
-    eval(currCell, liveNeighbours) {
-        if (currCell) {
-            if ((liveNeighbours === 2) || (liveNeighbours === 3)) {
-                return true;
-            }
-        } else if (!currCell) {
-            if (liveNeighbours === 3) {
-                return true;
-            }
-        }
-        return false
-    }
-
-
-    // eval(nw, n, ne, w, me, e, sw, s, se) {
-    //     let liveNeighbours = nw + n + ne + w + e + sw + s + se;
-    //     if (me) {
-    //         if ((liveNeighbours === 2) || (liveNeighbours === 3)) {
-    //             return true;
-    //         }
-    //     } else if (!me) {
-    //         if (liveNeighbours === 3) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
-
-}
 
 /** END CLASS DEFs */
 
@@ -110,12 +73,17 @@ window.onload = () => {
     stopButton = $("#stopButton");
 
     const board = init(gameBoardSize);
-    const rule = new Rule([2, 3], 3);
+    const rule = [2,3,3];
     const game = new Game(board, rule);
 
     game.gameBoard[12][12] = 1;
     game.gameBoard[13][12] = 1;
     game.gameBoard[14][12] = 1;
+
+    game.gameBoard[5][5] = 1;
+    game.gameBoard[5][6] = 1;
+    game.gameBoard[6][5] = 1;
+    game.gameBoard[6][6] = 1;
 
     console.log(...(game.gameBoard));
     
