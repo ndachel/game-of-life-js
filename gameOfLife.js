@@ -4,10 +4,16 @@
 const canvasWidth = 1000;
 const canvasHeight = 1000;
 const p = .5;
+const FPS = 7.5;
+
 let startButton;
 let stopButton;
 let canvas;
 let ctx;
+let requestAnimationFramePID;
+let continueAnimation = true;
+
+let game;
 
 const gameBoardSize = 25;
 
@@ -36,27 +42,27 @@ class Game {
     }
 
     alive(h, w) {
-            let liveNeighbours = 0;
-            const currCell = this.gameBoard[h][w];
-            for (let i = -1; i <= 1; i++) {
-                for (let j = -1; j <= 1; j++) {
-                    if (this.gameBoard[(i+h + gameBoardSize) % gameBoardSize][(j+w + gameBoardSize) % gameBoardSize]) {
-                        liveNeighbours++;
-                    }
+        let liveNeighbours = 0;
+        const currCell = this.gameBoard[h][w];
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (this.gameBoard[(i + h + gameBoardSize) % gameBoardSize][(j + w + gameBoardSize) % gameBoardSize]) {
+                    liveNeighbours++;
                 }
             }
+        }
 
-            
-            if (this.gameBoard[h][w]) {
-                liveNeighbours--;
-                if (liveNeighbours == this.rule[0] || liveNeighbours == this.rule[1]) {
-                    return true; 
-                }else {
-                    return false;
-                }
-            }else if (liveNeighbours == this.rule[2]) {
+
+        if (this.gameBoard[h][w]) {
+            liveNeighbours--;
+            if (liveNeighbours == this.rule[0] || liveNeighbours == this.rule[1]) {
                 return true;
-            }else return false;
+            } else {
+                return false;
+            }
+        } else if (liveNeighbours == this.rule[2]) {
+            return true;
+        } else return false;
 
     }
 
@@ -73,32 +79,40 @@ window.onload = () => {
     stopButton = $("#stopButton");
 
     const board = init(gameBoardSize);
-    const rule = [2,3,3];
-    const game = new Game(board, rule);
+    const rule = [2, 3, 3]; //rule[0] & rule[1] for living cells, rule[2] for dead cells.
+    game = new Game(board, rule);
 
-    game.gameBoard[12][12] = 1;
-    game.gameBoard[13][12] = 1;
-    game.gameBoard[14][12] = 1;
+    /** Blinker (oscillator) */
+    // game.gameBoard[12][12] = 1;
+    // game.gameBoard[13][12] = 1;
+    // game.gameBoard[14][12] = 1;
 
-    game.gameBoard[5][5] = 1;
-    game.gameBoard[5][6] = 1;
-    game.gameBoard[6][5] = 1;
-    game.gameBoard[6][6] = 1;
+    /** Glider (spaceship) */
+    game.gameBoard[1][1] = 1
+    game.gameBoard[2][2] = 1
+    game.gameBoard[3][2] = 1
+    game.gameBoard[3][1] = 1
+    game.gameBoard[3][0] = 1
 
-    console.log(...(game.gameBoard));
-    
+
+    /** Block (still life) */
+    // game.gameBoard[5][5] = 1;
+    // game.gameBoard[5][6] = 1;
+    // game.gameBoard[6][5] = 1;
+    // game.gameBoard[6][6] = 1;
+
     //start button is pressed
     startButton.click(() => {
-
-        
-        clearCanvas();
-        drawBoard(game.gameBoard);
-        game.nextIter();
+        continueAnimation = true; 
+        requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
     });
 
     stopButton.click(() => {
-        stop = !stop;
-        clearCanvas();
+        continueAnimation = false;
+        setTimeout(() => {
+            clearCanvas();
+        }, 250);
+        // clearCanvas();
     });
 
 }
@@ -130,7 +144,6 @@ const drawBoard = (board) => {
     for (let y = 0; y < board.length; y++) {
         for (let x = 0; x < board[y].length; x++) {
             if (board[y][x] == 1) {
-                // console.log(`x: ${x}, y: ${y}`);
                 drawLiveRect(x * cellOffset, y * cellOffset);
             }
         }
@@ -144,8 +157,14 @@ const clearCanvas = () => {
 }
 
 
-const gameLoop = (timeStamp) => {
-    let progress = timeStamp - lastRender;
-
+const gameLoop = () => {
+    setTimeout(() => {
+        clearCanvas();
+        drawBoard(game.gameBoard);
+        game.nextIter();
+        if (continueAnimation) {
+            requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
+        }
+    }, 1000 / FPS);
 
 };
