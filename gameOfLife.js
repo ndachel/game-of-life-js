@@ -140,11 +140,8 @@ const drawBoard = (board) => {
 
 /** clears the entire canvas */
 const clearCanvas = () => {
-    //ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //if (continueAnimation) {
-        ctx.fillStyle = "#34343488";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    //}
+    ctx.fillStyle = "#34343488";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 const changeBlock = (canvas, event) => { 
