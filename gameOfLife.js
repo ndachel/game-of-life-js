@@ -8,11 +8,10 @@ const FPS = 7.5;
 
 let startButton;
 let stopButton;
-let grid;
 let canvas;
 let ctx;
 let requestAnimationFramePID;
-let continueAnimation = true;
+let continueAnimation = false;
 
 let game;
 
@@ -69,12 +68,13 @@ class Game {
 
 }
 
-
 /** END CLASS DEFs */
 
 /** onload, listen on buttons and call run() to begin the game */
 window.onload = () => {
     canvas = document.getElementById('canvas');
+    canvas.addEventListener("mousedown", function(e){changeBlock(canvas, e);});
+    canvas.addEventListener("mousemove", function(e){showBlock(canvas, e);});
     ctx = canvas.getContext('2d');
     startButton = $("#startButton");
     stopButton = $("#stopButton");
@@ -83,57 +83,15 @@ window.onload = () => {
     const rule = [2, 3, 3]; //rule[0] & rule[1] for living cells, rule[2] for dead cells.
     game = new Game(board, rule);
 
-    /** Blinker (oscillator) */
-    // game.gameBoard[0][12] = 1;
-    // game.gameBoard[1][12] = 1;
-    // game.gameBoard[2][12] = 1;
-
-    /** Glider (spaceship) */
-    //game.gameBoard[1][1] = 1
-    //game.gameBoard[2][2] = 1
-    //game.gameBoard[3][2] = 1
-    //game.gameBoard[3][1] = 1
-    //game.gameBoard[3][0] = 1
-
-
-    /** Block (still life) */
-    // game.gameBoard[5][5] = 1;
-    // game.gameBoard[5][6] = 1;
-    // game.gameBoard[6][5] = 1;
-    // game.gameBoard[6][6] = 1;
+    requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
 
     //start button is pressed
-    startButton.click(() => {
-        grid = ($("#showGrid").is(":checked"));
-        
-        /** load a config from the checkboxes  - lazy and not scalable!! - needs refactor*/
-        if ($("#0_0").is(":checked")){ game.gameBoard[0][0] = 1;}
-        if ($("#0_1").is(":checked")){ game.gameBoard[0][1] = 1;}
-        if ($("#0_2").is(":checked")){ game.gameBoard[0][2] = 1;}
-        if ($("#0_3").is(":checked")){ game.gameBoard[0][3] = 1;}
-        
-        if ($("#1_0").is(":checked")){ game.gameBoard[1][0] = 1;}
-        if ($("#1_1").is(":checked")){ game.gameBoard[1][1] = 1;}
-        if ($("#1_2").is(":checked")){ game.gameBoard[1][2] = 1;}
-        if ($("#1_3").is(":checked")){ game.gameBoard[1][3] = 1;}
-
-        if ($("#2_0").is(":checked")){ game.gameBoard[2][0] = 1;}
-        if ($("#2_1").is(":checked")){ game.gameBoard[2][1] = 1;}
-        if ($("#2_2").is(":checked")){ game.gameBoard[2][2] = 1;}
-        if ($("#2_3").is(":checked")){ game.gameBoard[2][3] = 1;}
-
-        if ($("#3_0").is(":checked")){ game.gameBoard[3][0] = 1;}
-        if ($("#3_1").is(":checked")){ game.gameBoard[3][1] = 1;}
-        if ($("#3_2").is(":checked")){ game.gameBoard[3][2] = 1;}
-        if ($("#3_3").is(":checked")){ game.gameBoard[3][3] = 1;}
-        
+    startButton.click(() => {       
         continueAnimation = true; 
-        requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
     });
 
     stopButton.click(() => {
         continueAnimation = false;
-        grid = false;
         setTimeout(() => {
             clearCanvas();
         }, 250);
@@ -142,20 +100,18 @@ window.onload = () => {
 
 }
 
-
-/** draws a 40x40 rectangle at the specified x and y */
+/** draws a grid rectangle at the specified x and y */
 const drawLiveRect = (x, y) => {
+    size = canvasWidth / gameBoardSize
     ctx.fillStyle = "#9cd9c1";
-    ctx.fillRect(x + 0.5, y + 0.5, 40, 40);
+    ctx.fillRect(x + 0.5, y + 0.5, size, size);
 };
 
 /** draws a grid on the gameboard for old man eyes */
 const drawGrid = () => {
-    if (grid == true){
-        ctx.fillStyle = "#666666";
-        for(let y = 0; y < canvasHeight; y = y + canvasHeight / gameBoardSize) { ctx.fillRect(0, y, canvasWidth, 1);}
-        for(let x = 0; x < canvasWidth;  x = x + canvasWidth / gameBoardSize) { ctx.fillRect(x, 0, 1, canvasHeight);}
-    }
+    ctx.fillStyle = "#666666";
+    for(let y = 0; y < canvasHeight; y = y + canvasHeight / gameBoardSize) { ctx.fillRect(0, y, canvasWidth, 1);}
+    for(let x = 0; x < canvasWidth;  x = x + canvasWidth / gameBoardSize) { ctx.fillRect(x, 0, 1, canvasHeight);}
 };
 
 /** generates an initial game board of cells with the correct x and y values. Calls generatePlaceholder for each row */
@@ -182,22 +138,48 @@ const drawBoard = (board) => {
     }
 };
 
-
 /** clears the entire canvas */
 const clearCanvas = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //if (continueAnimation) {
+        ctx.fillStyle = "#34343488";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    //}
 }
 
+const changeBlock = (canvas, event) => { 
+    size = canvasWidth / gameBoardSize
+    let rect = canvas.getBoundingClientRect(); 
+    let x = Math.floor((event.clientX - rect.left) / size);
+    let y = Math.floor((event.clientY - rect.top)  / size);
+    console.log(x, y);
+    game.gameBoard[y][x] = !game.gameBoard[y][x];
+
+};
+
+const showBlock = (canvas, event) => { 
+    size = canvasWidth / gameBoardSize
+    let rect = canvas.getBoundingClientRect(); 
+    let x = Math.floor((event.clientX - rect.left) / size);
+    let y = Math.floor((event.clientY - rect.top) / size);
+
+    ctx.fillStyle = "#9cd4d905";
+    ctx.beginPath();ctx.arc((x*size)+size/2, (y*size)+size/2, size, 0, 360);ctx.fill();
+    
+    ctx.fillStyle = "#9cd4d9";
+    ctx.fillRect((x * size), (y * size), size, size);
+};
 
 const gameLoop = () => {
     setTimeout(() => {
         clearCanvas();
         drawGrid();
         drawBoard(game.gameBoard);
-        game.nextIter();
+        
         if (continueAnimation) {
-            requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
+            game.nextIter();
         }
+        requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
     }, 1000 / FPS);
 
 };
