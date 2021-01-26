@@ -8,6 +8,7 @@ const FPS = 7.5;
 
 let startButton;
 let stopButton;
+let grid;
 let canvas;
 let ctx;
 let requestAnimationFramePID;
@@ -83,16 +84,16 @@ window.onload = () => {
     game = new Game(board, rule);
 
     /** Blinker (oscillator) */
-    // game.gameBoard[12][12] = 1;
-    // game.gameBoard[13][12] = 1;
-    // game.gameBoard[14][12] = 1;
+    // game.gameBoard[0][12] = 1;
+    // game.gameBoard[1][12] = 1;
+    // game.gameBoard[2][12] = 1;
 
     /** Glider (spaceship) */
-    game.gameBoard[1][1] = 1
-    game.gameBoard[2][2] = 1
-    game.gameBoard[3][2] = 1
-    game.gameBoard[3][1] = 1
-    game.gameBoard[3][0] = 1
+    //game.gameBoard[1][1] = 1
+    //game.gameBoard[2][2] = 1
+    //game.gameBoard[3][2] = 1
+    //game.gameBoard[3][1] = 1
+    //game.gameBoard[3][0] = 1
 
 
     /** Block (still life) */
@@ -103,12 +104,36 @@ window.onload = () => {
 
     //start button is pressed
     startButton.click(() => {
+        grid = ($("#showGrid").is(":checked"));
+        
+        /** load a config from the checkboxes  - lazy and not scalable!! - needs refactor*/
+        if ($("#0_0").is(":checked")){ game.gameBoard[0][0] = 1;}
+        if ($("#0_1").is(":checked")){ game.gameBoard[0][1] = 1;}
+        if ($("#0_2").is(":checked")){ game.gameBoard[0][2] = 1;}
+        if ($("#0_3").is(":checked")){ game.gameBoard[0][3] = 1;}
+        
+        if ($("#1_0").is(":checked")){ game.gameBoard[1][0] = 1;}
+        if ($("#1_1").is(":checked")){ game.gameBoard[1][1] = 1;}
+        if ($("#1_2").is(":checked")){ game.gameBoard[1][2] = 1;}
+        if ($("#1_3").is(":checked")){ game.gameBoard[1][3] = 1;}
+
+        if ($("#2_0").is(":checked")){ game.gameBoard[2][0] = 1;}
+        if ($("#2_1").is(":checked")){ game.gameBoard[2][1] = 1;}
+        if ($("#2_2").is(":checked")){ game.gameBoard[2][2] = 1;}
+        if ($("#2_3").is(":checked")){ game.gameBoard[2][3] = 1;}
+
+        if ($("#3_0").is(":checked")){ game.gameBoard[3][0] = 1;}
+        if ($("#3_1").is(":checked")){ game.gameBoard[3][1] = 1;}
+        if ($("#3_2").is(":checked")){ game.gameBoard[3][2] = 1;}
+        if ($("#3_3").is(":checked")){ game.gameBoard[3][3] = 1;}
+        
         continueAnimation = true; 
         requestAnimationFramePID = window.requestAnimationFrame(gameLoop);
     });
 
     stopButton.click(() => {
         continueAnimation = false;
+        grid = false;
         setTimeout(() => {
             clearCanvas();
         }, 250);
@@ -124,7 +149,14 @@ const drawLiveRect = (x, y) => {
     ctx.fillRect(x + 0.5, y + 0.5, 40, 40);
 };
 
-
+/** draws a grid on the gameboard for old man eyes */
+const drawGrid = () => {
+    if (grid == true){
+        ctx.fillStyle = "#666666";
+        for(let y = 0; y < canvasHeight; y = y + canvasHeight / gameBoardSize) { ctx.fillRect(0, y, canvasWidth, 1);}
+        for(let x = 0; x < canvasWidth;  x = x + canvasWidth / gameBoardSize) { ctx.fillRect(x, 0, 1, canvasHeight);}
+    }
+};
 
 /** generates an initial game board of cells with the correct x and y values. Calls generatePlaceholder for each row */
 const init = (numberOfCells) => {
@@ -160,6 +192,7 @@ const clearCanvas = () => {
 const gameLoop = () => {
     setTimeout(() => {
         clearCanvas();
+        drawGrid();
         drawBoard(game.gameBoard);
         game.nextIter();
         if (continueAnimation) {

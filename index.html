@@ -12,9 +12,37 @@
 <h1>Game of Life</h1>
 
 <body>
+    <span style="white-space: nowrap;">
+        <input id="0_0" type="checkbox" />
+        <input id="0_1" type="checkbox" checked />
+        <input id="0_2" type="checkbox" />
+        <input id="0_3" type="checkbox" checked />
+    </span>
+    <span style="white-space: nowrap;">
+        <input id="1_0" type="checkbox" />
+        <input id="1_1" type="checkbox" checked />
+        <input id="1_2" type="checkbox" />
+        <input id="1_3" type="checkbox" />
+    </span>
+    <span style="white-space: nowrap;">
+        <input id="2_0" type="checkbox" checked />
+        <input id="2_1" type="checkbox" />
+        <input id="2_2" type="checkbox" checked />
+        <input id="2_3" type="checkbox" checked />
+    </span>
+    <span style="white-space: nowrap;">
+        <input id="3_0" type="checkbox" checked />
+        <input id="3_1" type="checkbox" checked />
+        <input id="3_2" type="checkbox" checked />
+        <input id="3_3" type="checkbox" />
+    </span>
     <canvas id="canvas" width="1000" height="1000"></canvas>
-    <button id="startButton" class="startButton" type="button"> START </button>
-    <button id="stopButton" class="stopButton" type="button"> STOP </button>
+    <span style="white-space: nowrap;">
+        Show Grid<input id="showGrid" type="checkbox" checked/>
+        <button id="startButton" class="startButton" type="button"> START </button>
+        <button id="stopButton" class="stopButton" type="button"> STOP </button>
+    </span> 
+
     <script type="text/javascript" src="gameOfLife.js"></script>
 </body>
 
